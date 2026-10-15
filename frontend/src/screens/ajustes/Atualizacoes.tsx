@@ -1,4 +1,4 @@
-// Ajustes > Sobre: estado da atualização automática e o token do GitHub (este só no PC).
+// Ajustes > Sobre: estado da atualização automática e o token opcional do GitHub (este só no PC).
 import { KeyRound, RefreshCw } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { HexTile } from "@/components/favos";
@@ -13,8 +13,6 @@ const hhmm = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digi
 function statusText(u: UpdateStatus): string {
   const when = u.checked_at ? ` · verificado às ${hhmm.format(u.checked_at * 1000)}` : "";
   switch (u.state) {
-    case "sem_token":
-      return "Desligada: falta o token do GitHub";
     case "verificando":
       return "Verificando…";
     case "baixando":
@@ -82,7 +80,7 @@ export function Atualizacoes({ pc }: { pc: boolean }) {
         <button
           type="button"
           className="btn btn-sec btn-sm"
-          disabled={!u || u.state === "sem_token" || busy || saving}
+          disabled={!u || busy || saving}
           onClick={() => void run(api.update.check, "Não consegui verificar")}
         >
           Verificar agora
@@ -91,10 +89,11 @@ export function Atualizacoes({ pc }: { pc: boolean }) {
       {pc && u && (
         <li className="aj-r">
           <HexTile icon={KeyRound} size="sm" />
-          {u.state === "sem_token" ? (
+          {!u.has_token ? (
             <form className="tx aj-tok" onSubmit={save}>
-              <p className="t">Token do GitHub</p>
-              <p className="s">Só leitura de Contents no repositório. Fica no cofre do Windows e nunca volta pra tela.</p>
+              <p className="t">Token do GitHub (opcional)</p>
+              <p className="s">Sem token a atualização já funciona. Use só se o repositório for privado ou se o GitHub
+                limitar as consultas. Fica no cofre do Windows e nunca volta pra tela.</p>
               <div className="aj-tok-row">
                 <span className="inp">
                   <input

@@ -1,10 +1,10 @@
-"""Atualização automática pelos releases do GitHub (repositório privado, token no cofre).
+"""Atualização automática pelos releases do GitHub (repositório público; token opcional no cofre).
 
 Fluxo (só no central.exe instalado; rodando do código só avisa que há versão nova):
 1. A cada hora (ou no "Verificar agora"), lê o último release.
 2. Versão maior que a atual: baixa o instalador novo E o da versão atual (para voltar se der errado)
    e confere o SHA-256 publicado no release (arquivo inteiro e do release certo; quem garante a
-   origem é o acesso ao repositório privado, como no Hugin).
+   origem é o HTTPS da API do GitHub e quem pode publicar releases no repositório).
 3. Copia o banco para backups/ e dispara a tarefa "Central Atualizador" (SYSTEM), que roda o
    instalador em modo silencioso fora deste processo (o instalador para a central para trocar os
    arquivos), confere /api/health e reinstala a versão anterior se a nova não subir.
@@ -42,7 +42,7 @@ API = "https://api.github.com"
 
 _VERSION = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
 
-State = Literal["sem_token", "ok", "verificando", "baixando", "instalando", "disponivel", "erro"]
+State = Literal["ok", "verificando", "baixando", "instalando", "disponivel", "erro"]
 
 
 class UpdateError(Exception):
@@ -62,13 +62,15 @@ def sha256_matches(data: bytes, published: str) -> bool:
 
 @dataclass
 class Status:
-    state: State = "sem_token"
+    state: State = "ok"
     current: str = __version__
     latest: str | None = None
     checked_at: float | None = None
     message: str | None = None
     # Só o central.exe instalado aplica; rodando do código, só avisa.
     can_apply: bool = FROZEN
+    # Sem token a consulta é anônima (limite de 60 pedidos/hora por IP, de sobra para 1 por hora).
+    has_token: bool = False
 
 
 class Updater:
@@ -76,7 +78,7 @@ class Updater:
         self.settings = settings
         self.store = store
         self.vault = vault
-        self.status = Status(state="ok" if vault.has(TOKEN_KEY) else "sem_token")
+        self.status = Status(has_token=vault.has(TOKEN_KEY))
         self._lock = asyncio.Lock()
         self._transport = transport
         self._dir = settings.data_dir / "updates"
@@ -95,11 +97,11 @@ class Updater:
         if r.status_code != 200:
             raise ValueError("O GitHub recusou o token ou ele não tem acesso ao repositório.")
         self.vault.set(TOKEN_KEY, token)
-        self.status.state, self.status.message = "ok", None
+        self.status.state, self.status.message, self.status.has_token = "ok", None, True
 
     def clear_token(self) -> None:
         self.vault.delete(TOKEN_KEY)
-        self.status.state, self.status.message = "sem_token", None
+        self.status.state, self.status.message, self.status.has_token = "ok", None, False
 
     async def run_forever(self) -> None:
         await asyncio.sleep(30)  # deixa a central subir e os aparelhos conectarem antes
@@ -113,9 +115,6 @@ class Updater:
             return
         async with self._lock:
             token = self.vault.get(TOKEN_KEY)
-            if not token:
-                self.status.state = "sem_token"
-                return
             try:
                 await self._check(token)
             except UpdateError as exc:
@@ -133,16 +132,18 @@ class Updater:
 
     # Interno ------------------------------------------------------------------
 
-    def _client(self, token: str) -> httpx.AsyncClient:
+    def _client(self, token: str | None) -> httpx.AsyncClient:
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28", "User-Agent": f"Central/{__version__}",
+        }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         return httpx.AsyncClient(
-            base_url=API, timeout=60, follow_redirects=True, transport=self._transport,
-            headers={
-                "Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28", "User-Agent": f"Central/{__version__}",
-            },
+            base_url=API, timeout=60, follow_redirects=True, transport=self._transport, headers=headers,
         )
 
-    async def _check(self, token: str) -> None:
+    async def _check(self, token: str | None) -> None:
         self.status.state, self.status.message = "verificando", None
         async with self._client(token) as client:
             r = await client.get(f"/repos/{REPO}/releases/latest")
@@ -150,7 +151,9 @@ class Updater:
                 self.status.state, self.status.latest = "ok", None
                 return
             if r.status_code in (401, 403):
-                raise UpdateError("O GitHub recusou o token de atualização (expirou?).")
+                if token:
+                    raise UpdateError("O GitHub recusou o token de atualização (expirou?).")
+                raise UpdateError("O GitHub limitou as consultas; tento de novo mais tarde.")
             r.raise_for_status()
             release = r.json()
             latest = parse_version(str(release.get("tag_name", "")))

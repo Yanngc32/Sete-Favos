@@ -29,7 +29,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # O padrão da action pede o pacote `tools`, que o sdkmanager atual não tem mais (falha com exit 1).
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - uses: actions/setup-node@v4
         with:

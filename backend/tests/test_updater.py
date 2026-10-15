@@ -85,7 +85,7 @@ async def test_wrong_hash_is_refused(tmp_path, vault, monkeypatch) -> None:
     assert not (tmp_path / "updates").exists()
 
 
-async def test_same_version_dev_mode_and_no_token(tmp_path, vault, monkeypatch) -> None:
+async def test_same_version_and_dev_mode(tmp_path, vault, monkeypatch) -> None:
     monkeypatch.setattr(up.Updater, "_launch", lambda *a: pytest.fail("não podia instalar"))
     u = make(tmp_path, github(tag=f"v{up.__version__}"), vault)
     await u.check()
@@ -96,9 +96,22 @@ async def test_same_version_dev_mode_and_no_token(tmp_path, vault, monkeypatch) 
     await u.check()
     assert u.status.state == "disponivel"
 
-    u = make(tmp_path / "x", github(), Vault(MemoryKeyring()), token=False)
+
+
+async def test_works_without_token(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(up, "FROZEN", False)
+    seen: list[httpx.Request] = []
+    u = make(tmp_path, github(seen=seen), Vault(MemoryKeyring()), token=False)
+    assert not u.status.has_token
     await u.check()
-    assert u.status.state == "sem_token"
+    assert u.status.state == "disponivel" and u.status.latest == "9.0.0"
+    assert seen and all("authorization" not in r.headers for r in seen)
+
+
+async def test_rate_limited_without_token(tmp_path) -> None:
+    u = make(tmp_path, github(status=403), Vault(MemoryKeyring()), token=False)
+    await u.check()
+    assert u.status.state == "erro" and "limitou" in (u.status.message or "")
 
 
 async def test_rejected_token(tmp_path, vault) -> None:

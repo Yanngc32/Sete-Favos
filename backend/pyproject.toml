@@ -1,6 +1,6 @@
 [project]
 name = "casa"
-version = "0.1.0"
+version = "0.1.1"
 description = "Integrador da casa: controle local de Tuya/Positivo, Midea, LG webOS e Xiaomi"
 requires-python = ">=3.13,<3.14"
 dependencies = [

@@ -228,13 +228,15 @@ export interface AccessDevice {
 }
 
 export interface UpdateStatus {
-  state: "sem_token" | "ok" | "verificando" | "baixando" | "instalando" | "disponivel" | "erro";
+  state: "ok" | "verificando" | "baixando" | "instalando" | "disponivel" | "erro";
   current: string;
   latest: string | null;
   checked_at: number | null;
   message: string | null;
   /** Só o central.exe instalado aplica; rodando do código, só avisa. */
   can_apply: boolean;
+  /** Token do GitHub no cofre; sem ele a consulta é anônima. */
+  has_token: boolean;
 }
 
 export type Session =
