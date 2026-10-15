@@ -1,0 +1,14 @@
+{
+  "name": "sete-favos-readme-kit",
+  "private": true,
+  "type": "module",
+  "description": "Gera as imagens, cards e vídeos do README a partir da central em modo demo.",
+  "scripts": {
+    "shots": "node shots.mjs",
+    "cards": "node cards.mjs",
+    "videos": "node videos.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
