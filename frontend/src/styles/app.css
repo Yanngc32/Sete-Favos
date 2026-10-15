@@ -1,0 +1,59 @@
+/* Ajustes do app real sobre o kit (o kit desenha telas de tamanho fixo nos mocks). */
+@layer components {
+  html, body, #root { height: 100%; }
+  body { margin: 0; background: var(--color-bg); }
+  #root { isolation: isolate; }
+
+  /* Casca: menu lateral no desktop (≥1024px), barra de abas no celular (<1024px). */
+  .app { min-height: 100dvh; }
+  .side { position: sticky; top: 0; height: 100dvh; }
+  .main { overflow: visible; }
+  /* A barra de baixo (.fv-tabs) e quando ela aparece (<1024px) ficam em components/favos/favos.css. */
+
+  @media (max-width: 1023.98px) {
+    .app { display: block; }
+    .side { display: none; }
+    .main { padding-bottom: calc(var(--size-tabbar) + env(safe-area-inset-bottom)); }
+    .main.no-tabbar { padding-bottom: env(safe-area-inset-bottom); }
+  }
+
+  /* Overlays do app (dialog/sheet/toast) ficam presos à janela, não a uma moldura. */
+  .scrim { position: fixed; z-index: var(--z-modal); }
+  /* minmax(0,1fr): sem isso a coluna cresce até os 400px do .dlg e o diálogo vaza no celular. */
+  .overlay-c { position: fixed; inset: 0; z-index: var(--z-modal); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: var(--space-md); }
+  .dlg { animation: dlg-in var(--dur-long) var(--ease-out); }
+  .scrim { animation: fade-in var(--dur-short) var(--ease-out); }
+  @keyframes dlg-in { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes fade-in { from { opacity: 0; } }
+
+  .toasts {
+    position: fixed; left: 50%; bottom: calc(var(--space-lg) + env(safe-area-inset-bottom)); z-index: var(--z-toast);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
+    width: min(420px, calc(100vw - 2 * var(--space-md))); transform: translateX(-50%); pointer-events: none;
+  }
+  .toasts > * { pointer-events: auto; animation: dlg-in var(--dur-short) var(--ease-out); }
+  .toasts .toast-prog { animation: toast-prog linear forwards; }
+  @keyframes toast-prog { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  @media (max-width: 1023.98px) {
+    .toasts { bottom: calc(var(--size-tabbar) + var(--space-sm) + env(safe-area-inset-bottom)); }
+    .toasts > .toast { width: 100%; max-width: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dlg, .scrim, .toasts > * { animation-name: fade-in; }
+  }
+
+  /* Tema ---------------------------------------------------------------- */
+  html { background: var(--color-bg); }
+  .side-foot { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-xs); }
+  .side-foot-st { display: flex; flex-direction: column; gap: var(--space-3xs); min-width: 0; }
+  .theme-toggle { font-size: 20px; }
+  .theme-toggle:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Fade curto da página ao trocar de tema (View Transitions). */
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 220ms; animation-timing-function: var(--ease-out); }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
+  }
+}

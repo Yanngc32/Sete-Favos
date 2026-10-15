@@ -1,0 +1,30 @@
+/* Favos: preenchidos na cor do texto; o contorno da mesma cor arredonda os cantos. */
+svg.favos{fill:currentColor;stroke:currentColor;stroke-width:2.5;stroke-linejoin:round}
+svg.favos.is-vazio{fill:none;stroke-width:4}
+svg.favos.is-vazio polygon:first-child{fill:currentColor}
+
+/* Abertura: tela cheia com a colmeia se montando e o nome embaixo. */
+.splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-md);background:var(--color-bg);color:var(--color-text);animation:splash-in 300ms var(--ease-out) 250ms both}
+.splash .favos{width:72px;height:72px;color:var(--color-accent-deep)}
+.splash-t{font:var(--weight-medium) var(--text-md)/1 var(--font-display);letter-spacing:var(--tracking-tight)}
+/* Carregando e abertura (Montagem): cada favo entra com escala, do centro para fora; segura montado e some junto. */
+.favos-build.spin{animation:none}
+.favos-build polygon{transform-box:fill-box;transform-origin:center;animation:favo-monta 1800ms cubic-bezier(.2,.8,.2,1) infinite}
+.favos-build polygon:nth-child(2){animation-delay:180ms}
+.favos-build polygon:nth-child(3){animation-delay:270ms}
+.favos-build polygon:nth-child(4){animation-delay:360ms}
+.favos-build polygon:nth-child(5){animation-delay:450ms}
+.favos-build polygon:nth-child(6){animation-delay:540ms}
+.favos-build polygon:nth-child(7){animation-delay:630ms}
+@keyframes favo-monta{0%{opacity:0;transform:scale(.3)}22%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.85)}}
+/* Só aparece se demorar: abertura rápida não pisca. */
+@keyframes splash-in{from{opacity:0}to{opacity:1}}
+
+/* Menos movimento: sem escala, só um pulso lento de opacidade (ainda dá pra ver que está carregando). */
+@media (prefers-reduced-motion:reduce){
+  .favos-build polygon{animation:favo-pulsa 2400ms ease-in-out infinite;transform:none}
+}
+@keyframes favo-pulsa{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Estado vazio: a colmeia ocupa mais o círculo que o ícone padrão. */
+.tile.lg svg.favos{width:36px;height:36px}

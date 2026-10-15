@@ -1,0 +1,156 @@
+/* Tela: Dispositivos (lista) · Sete Favos · mock exploracao-favos telas 3, 6 e 7. Só tokens.
+   O bloco mel, as pílulas e o card (DeviceRow) vêm de components/favos; aqui só o miolo da tela e os controles
+   que abrem dentro do card (.dx-*). Tudo preso em .apl para não vazar (o CSS das telas é global).
+   Movimento: press .97, transições 150–220ms em cor/opacity/transform; prefers-reduced-motion corta o espacial. */
+@layer components {
+  .apl .apl-b { gap: var(--space-md); padding-top: var(--space-2xs); }
+  .apl .apl-g { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .apl .apl-h { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); margin-top: var(--space-2xs); }
+  .apl .apl-h h2 { display: flex; align-items: center; gap: var(--space-xs); font: var(--weight-medium) var(--text-base) / var(--leading-snug) var(--font-display); letter-spacing: var(--tracking-tight); text-wrap: balance; }
+
+  /* grupo/aparelho recém-criado: contorno latão curto (flashNew em grupos/groupDialog.ts) */
+  .apl .fv-dev { scroll-margin: var(--space-xl); }
+  .apl .fv-dev.is-new { box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-card); }
+  .apl .fv-dev.is-group .hx { --hx-bg: var(--color-accent-soft); --hx-ink: var(--color-accent-strong); }
+  .apl .fv-dev.is-group.on .hx { --hx-bg: var(--color-accent); --hx-ink: var(--color-on-accent); }
+
+  /* ---------- controles dentro do card ---------- */
+  .apl .dx-c { display: flex; flex-direction: column; gap: var(--space-2xs); }
+  .apl .dx-r { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); min-height: var(--space-lg); }
+  .apl .dx-l { display: inline-flex; align-items: center; gap: var(--space-2xs); font-size: var(--text-xs); color: var(--color-text-2); }
+  .apl .dx-v { font-size: var(--text-xs); color: var(--color-text); font-variant-numeric: tabular-nums; }
+
+  /* segmentado do kit, compacto e na largura toda */
+  .apl .seg.dx-seg { width: 100%; }
+  .apl .seg.dx-seg button { flex: 1 1 0; min-width: 0; min-height: 34px; padding: 0 var(--space-2xs); font-size: var(--text-xs); }
+  .apl .fv-dev.on .seg.dx-seg { background: var(--color-accent-fill); }
+  .apl .seg.dx-seg-wrap { flex-wrap: wrap; }
+  .apl .seg.dx-seg-wrap button { flex: 1 1 auto; padding: 0 var(--space-sm); }
+  .apl .seg.dx-seg button[disabled] { cursor: not-allowed; opacity: var(--opacity-disabled); }
+
+  /* −/+ grande: temperatura do ar e volume da TV */
+  .apl .dx-stp { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+  .apl .dx-stb {
+    appearance: none; display: grid; place-items: center; flex: none; width: var(--size-touch); height: var(--size-touch); padding: 0;
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-full); background: var(--color-surface); color: var(--color-text);
+    cursor: pointer;
+    transition: transform var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+  }
+  .apl .dx-stb:active:not([disabled]) { transform: scale(.97); }
+  .apl .dx-stb[disabled] { cursor: not-allowed; opacity: var(--opacity-disabled); }
+  .apl .dx-stb[aria-pressed=true] { border-color: var(--color-accent-fill); background: var(--color-accent); color: var(--color-on-accent); }
+  .apl .dx-stv {
+    flex: 1; min-width: 0; text-align: center; color: var(--color-text);
+    font: var(--weight-light) var(--text-2xl) / 1 var(--font-display); letter-spacing: var(--tracking-display); font-variant-numeric: tabular-nums;
+    transition: color var(--dur-short) var(--ease-out);
+  }
+  .apl .dx-stv small { margin-left: var(--space-3xs); font-size: .4em; font-weight: var(--weight-regular); letter-spacing: 0; color: var(--color-text-2); }
+  .apl .dx-stv.is-muted { color: var(--color-muted); }
+  .apl .dx-amb { margin-top: calc(var(--space-xs) * -1); text-align: center; font-size: var(--text-xs); color: var(--color-text-2); font-variant-numeric: tabular-nums; }
+
+  /* slider do kit (brilho) e o de temperatura de cor (trilho em gradiente quente → fria) */
+  .apl .dx-sl { height: var(--size-touch); margin-top: calc(var(--space-xs) * -1); margin-bottom: calc(var(--space-2xs) * -1); }
+  .apl .fv-dev.on .dx-sl .sl-tr { background: var(--color-accent-fill); }
+  .apl .dx-sl .sl-th { transition: transform var(--dur-micro) var(--ease-out); }
+  .apl .dx-sl.is-drag .sl-th { transform: translate(-50%, -50%) scale(1.08); }
+  .apl .dx-sl[data-disabled] { opacity: var(--opacity-disabled); }
+  .apl .fv-dev .dx-sl.dx-kel .sl-tr { height: var(--space-xs); background: linear-gradient(90deg, var(--color-luz-quente), var(--color-luz-fria)); }
+
+  /* paleta da lâmpada RGB: uma linha, cores reais (tokens --color-luz-*) */
+  .apl .dx-pal { display: grid; grid-template-columns: repeat(var(--n, 10), minmax(0, 40px)); justify-content: space-between; gap: var(--space-xs); padding: var(--space-3xs) 0; }
+  .apl .dx-pc {
+    position: relative; appearance: none; aspect-ratio: 1; width: 100%; padding: 0; border: 0; border-radius: var(--radius-full);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-text) 14%, transparent);
+    outline: 2px solid transparent; outline-offset: 2px; cursor: pointer;
+    transition: transform var(--dur-micro) var(--ease-out), outline-color var(--dur-micro) var(--ease-out);
+  }
+  /* área de toque maior sem sobrepor a vizinha (metade do gap pra cada lado) */
+  .apl .dx-pc::after { content: ""; position: absolute; inset: calc(var(--space-xs) / -2); border-radius: inherit; }
+  .apl .dx-pc:active:not([disabled]) { transform: scale(.97); }
+  .apl .dx-pc[aria-checked=true] { outline-color: var(--color-text-2); }
+  .apl .dx-pc:focus-visible { outline-color: var(--color-focus); }
+  .apl .dx-pc[disabled] { cursor: not-allowed; opacity: var(--opacity-disabled); }
+
+  /* teclas do interruptor */
+  .apl .dx-keys { display: flex; flex-direction: column; }
+  .apl .dx-key { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: var(--size-touch); font-size: var(--text-sm); }
+  .apl .dx-key + .dx-key { border-top: 1px solid var(--color-border); }
+  .apl .fv-dev.on .dx-key + .dx-key { border-top-color: var(--color-accent-fill); }
+
+  /* robô */
+  .apl .dx-acts { display: flex; gap: var(--space-xs); }
+  .apl .dx-acts .btn { flex: 1 1 0; min-width: 0; }
+
+  /* tomada e celular: números */
+  .apl .dx-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
+  .apl .dx-stat { display: flex; flex-direction: column; gap: var(--space-3xs); }
+  .apl .dx-big { font: var(--weight-light) var(--text-xl) / 1.1 var(--font-display); letter-spacing: var(--tracking-display); font-variant-numeric: tabular-nums; color: var(--color-text); }
+  .apl .dx-big small { margin-left: var(--space-3xs); font-size: .5em; font-weight: var(--weight-regular); letter-spacing: 0; color: var(--color-text-2); }
+  .apl .dx-big-t { font-size: var(--text-md); line-height: 1.6; }
+
+  /* avisos curtos */
+  .apl :is(.dx-note, .dx-off, .dx-err) { display: flex; align-items: flex-start; gap: var(--space-xs); font-size: var(--text-xs); color: var(--color-text-2); text-wrap: pretty; }
+  .apl :is(.dx-off, .dx-err) .i { flex: none; margin-top: 1px; }
+  .apl .dx-off { color: var(--color-warning); font-weight: var(--weight-medium); }
+  .apl .dx-err { color: var(--color-danger); font-weight: var(--weight-medium); }
+
+  /* ficha: fabricante · modelo · IP + link do detalhe */
+  .apl .dx-info { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--color-border); }
+  .apl .fv-dev.on .dx-info { border-top-color: var(--color-accent-fill); }
+  .apl .dx-meta { min-width: 0; font-size: var(--text-xs); color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .apl .fv-dev.on .dx-meta { color: var(--color-text-2); }
+  .apl .dx-meta .mono { font-size: var(--text-xs); }
+  .apl .dx-go { position: relative; display: inline-flex; align-items: center; gap: var(--space-3xs); flex: none; font-size: var(--text-xs); }
+  .apl .dx-go::after { content: ""; position: absolute; inset: calc((var(--size-touch) - 1lh) / -2) calc(var(--space-2xs) * -1); }
+  .apl .dx-go .i { transition: transform var(--dur-micro) var(--ease-out); }
+  @media (hover: hover) { .apl .dx-go:hover .i { transform: translateX(2px); } }
+
+  /* controle remoto da TV (componente do Detalhe, desenho próprio aqui) */
+  .apl .dx-rc { padding-top: var(--space-2xs); }
+  .apl .dx-rc .fv-exp-b { padding-top: var(--space-xs); }
+  .apl .dx-rc .ctl > .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .apl .rc { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); padding: var(--space-2xs) 0; border-radius: var(--radius-card); outline: 0; }
+  .apl .rc:focus-visible { box-shadow: 0 0 0 2px var(--color-focus); }
+  .apl .rc-pad { display: grid; grid-template: ". up ." 48px "left ok right" 48px ". down ." 48px / 52px 60px 52px; gap: var(--space-2xs); }
+  .apl .rc-up { grid-area: up; } .apl .rc-down { grid-area: down; } .apl .rc-left { grid-area: left; } .apl .rc-right { grid-area: right; }
+  .apl .rc-ok { grid-area: ok; border-radius: var(--radius-full); font-weight: var(--weight-medium); }
+  .apl .rc-row { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-xs); }
+  .apl .rc-row .rc-b { width: 48px; height: var(--size-touch); }
+  .apl .rc-b {
+    display: grid; place-items: center; min-width: 0; padding: 0; border: 1px solid var(--color-border-strong); border-radius: var(--radius-control);
+    background: var(--color-surface); color: var(--color-text); cursor: pointer;
+    transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .apl .rc-b:active:not([disabled]), .apl .rc-b.is-hit { background: var(--color-accent); color: var(--color-on-accent); transform: scale(.97); }
+  .apl .rc-b[disabled] { cursor: not-allowed; opacity: var(--opacity-disabled); }
+
+  /* ---------- carregando e vazio ---------- */
+  .apl .apl-sk-h { width: 96px; height: 18px; margin: var(--space-2xs) 0; border-radius: var(--radius-sm); }
+  .apl .apl-sk { display: flex; align-items: center; gap: var(--space-sm); min-height: var(--density-list-row); padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+  .apl .apl-sk-hx { width: 40px; height: 40px; clip-path: polygon(50% 6%, 88% 28%, 88% 72%, 50% 94%, 12% 72%, 12% 28%); }
+  .apl .apl-sk-tx { flex: 1; display: flex; flex-direction: column; gap: var(--space-2xs); }
+  .apl .apl-sk-tx .sk { height: 12px; border-radius: var(--radius-sm); }
+  .apl .apl-sk-sw { width: 44px; height: 26px; border-radius: var(--radius-full); }
+  .apl .apl-sk-s { opacity: .8; }
+  .apl .apl-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); padding: var(--space-2xl) var(--space-md); text-align: center; }
+  .apl .apl-empty h2 { margin-top: var(--space-xs); font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--font-display); letter-spacing: var(--tracking-tight); text-wrap: balance; }
+  .apl .apl-empty p { max-width: 36ch; color: var(--color-text-2); text-wrap: pretty; }
+  .apl .apl-empty .btn { margin-top: var(--space-sm); }
+
+  @media (min-width: 1024px) {
+    .apl .apl-b { gap: var(--space-lg); }
+    .apl .apl-g { gap: var(--space-sm); }
+    .apl .fv-dev-x { padding-inline: var(--space-xs); }
+    /* no desktop o card é largo: paleta e −/+ ficam no tamanho do celular, sem espalhar */
+    .apl .dx-pal { grid-template-columns: repeat(var(--n, 10), 36px); justify-content: start; gap: var(--space-sm); }
+    .apl .dx-stp { width: 100%; max-width: 400px; margin-inline: auto; }
+    .apl .dx-c:has(.dx-sl) { max-width: 560px; }
+    .apl .dx-c:has(.dx-pal) { width: max-content; max-width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .apl .dx-stb:active, .apl .dx-pc:active, .apl .rc-b:active, .apl .rc-b.is-hit { transform: none; }
+    .apl .dx-sl.is-drag .sl-th { transform: translate(-50%, -50%); }
+    .apl .dx-go .i { transition: none; }
+  }
+}

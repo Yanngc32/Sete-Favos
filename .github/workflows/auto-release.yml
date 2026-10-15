@@ -1,0 +1,37 @@
+# Versão nova na main = release (estilo Hugin): quando o push muda `version` do backend/pyproject.toml
+# e a tag vX.Y.Z ainda não existe, cria a tag e dispara o release.yml nela.
+# (Tag criada com o GITHUB_TOKEN não dispara workflows sozinha; por isso o `gh workflow run`.)
+name: Auto release
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/pyproject.toml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag e release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -nE 's/^version *= *"([^"]+)".*/\1/p' backend/pyproject.toml | head -1)
+          tag="v$version"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "versão inválida: $version"; exit 1; fi
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "$tag já existe; nada a fazer."
+            exit 0
+          fi
+          git tag "$tag"
+          git push origin "$tag"
+          gh workflow run release.yml --ref "$tag"

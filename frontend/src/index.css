@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/kit.css";
+@import "./styles/app.css";
+@import "./components/favos/favos.css";
+
+/* O alternador de tema (components/theme-toggles) usa `dark:` pela classe que o próprio botão recebe
+   (`dark`/`light`), não pelo tema da página. */
+@custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
+
+/* O Tailwind gera utilitários ao achar essas palavras no código; aqui elas são classes do kit (.ring = anel
+   de bateria) ou nunca são usadas como utilitário. Bloqueadas pra não sobrescrever o kit. */
+@source not inline("ring");
+@source not inline("shadow");
+@source not inline("border");
+@source not inline("container");
+@source not inline("table");
+@source not inline("transform");

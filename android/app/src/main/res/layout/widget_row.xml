@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado junto com widget_grid.xml: mesmos ids (slot0..3, icon0..3, name0..3, state0..3) nos dois layouts. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:id="@+id/slot0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_slot_off"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/icon0"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/name0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/state0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx_2"
+                android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/slot1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_slot_off"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/icon1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/name1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/state1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx_2"
+                android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/slot2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_slot_off"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/icon2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/name2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/state2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx_2"
+                android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/slot3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_slot_off"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/icon3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/name3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/state3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_tx_2"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

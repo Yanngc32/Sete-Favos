@@ -1,0 +1,104 @@
+# Release: tag vX.Y.Z -> testes, central.exe, instalador, SHA-256 e release no próprio repo.
+# Normalmente disparado pelo auto-release.yml (versão nova na main); também aceita tag manual.
+# A tag tem que bater com `version` do backend/pyproject.toml.
+# App Android: só sai com os secrets CENTRAL_ANDROID_KEYSTORE (o .jks em base64) e CENTRAL_ANDROID_PASSWORD;
+# sem eles o release sai sem APK (a assinatura tem que ser sempre a mesma, senão o Android recusa atualizar).
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Versão da tag = versão do pyproject
+        run: |
+          if ("${{ github.ref_type }}" -ne "tag") { throw "Rode a partir de uma tag vX.Y.Z." }
+          $tag = "${{ github.ref_name }}".TrimStart('v')
+          $py = (Select-String -Path backend/pyproject.toml -Pattern '^version\s*=\s*"(.+)"').Matches[0].Groups[1].Value
+          if ($tag -ne $py) { throw "Tag v$tag diferente do pyproject ($py)." }
+          "VERSION=$tag" >> $env:GITHUB_ENV
+
+      - name: Backend (testes e lint)
+        working-directory: backend
+        run: |
+          uv sync --frozen --group build
+          uv run --no-sync pytest -q
+          uvx ruff check src tests
+
+      - name: Painel (testes e build)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: App Android
+        env:
+          KEYSTORE_B64: ${{ secrets.CENTRAL_ANDROID_KEYSTORE }}
+          CENTRAL_KEYSTORE_PASSWORD: ${{ secrets.CENTRAL_ANDROID_PASSWORD }}
+        run: |
+          if (-not $env:KEYSTORE_B64) { Write-Warning "Sem CENTRAL_ANDROID_KEYSTORE: release sem APK."; exit 0 }
+          $ks = Join-Path $env:RUNNER_TEMP 'central.jks'
+          [IO.File]::WriteAllBytes($ks, [Convert]::FromBase64String($env:KEYSTORE_B64))
+          $env:CENTRAL_KEYSTORE_FILE = $ks
+          $env:CENTRAL_VERSION = $env:VERSION
+          Push-Location android
+          ./gradlew.bat assembleRelease --no-daemon --console=plain
+          if ($LASTEXITCODE) { throw "gradle falhou" }
+          Pop-Location
+          Remove-Item $ks
+          # Dentro do painel (a central oferece em Ajustes) e como asset do release.
+          New-Item -ItemType Directory -Force frontend/dist/app | Out-Null
+          Copy-Item android/app/build/outputs/apk/release/app-release.apk frontend/dist/app/central.apk
+          New-Item -ItemType Directory -Force build | Out-Null
+          Copy-Item android/app/build/outputs/apk/release/app-release.apk "build/Central-$env:VERSION.apk"
+
+      - name: central.exe
+        run: backend/.venv/Scripts/pyinstaller packaging/central.spec --noconfirm --distpath build/dist --workpath build/work
+
+      - name: Instalador
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc /Q "/DAppVersion=$env:VERSION" packaging/central.iss
+          if ($LASTEXITCODE) { throw "ISCC falhou" }
+
+      - name: SHA-256
+        run: |
+          (Get-FileHash "build/CentralSetup-$env:VERSION.exe" -Algorithm SHA256).Hash.ToLower() |
+            Set-Content -Encoding ascii "build/CentralSetup-$env:VERSION.exe.sha256"
+
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $files = @("build/CentralSetup-$env:VERSION.exe", "build/CentralSetup-$env:VERSION.exe.sha256")
+          if (Test-Path "build/Central-$env:VERSION.apk") { $files += "build/Central-$env:VERSION.apk" }
+          gh release create "${{ github.ref_name }}" --title "Central $env:VERSION" --generate-notes @files

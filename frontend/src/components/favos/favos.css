@@ -1,0 +1,412 @@
+/* Hallmark · component: base Sete Favos (bloco mel, favo, pílulas, abrir/recolher, linha de aparelho, navegação)
+ * genre: modern-minimal · theme: Latão (DS oficial "Sete Favos") · referência: design-fontes/src/exploracao-favos.html
+ * states: default · hover · focus · active · disabled · loading (aria-busy) · erro/offline (is-off) · selecionado
+ * pre-emit critique: P4 H4 E4 S5 R4 V4 · só tokens (color.honey.*, radius.curve, opacity.texture são novos)
+ * movimento: transform/opacity; exceções medidas (grid-template-rows do Collapse, flex-grow da aba ativa,
+ * largura do indicador das pílulas) ficam ≤ --dur-short e somem em prefers-reduced-motion. */
+@layer components {
+  /* Bloco mel ----------------------------------------------------------------------------------------------- */
+  .fv {
+    --fv-gutter: var(--space-md);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    margin-bottom: calc(var(--radius-curve) * -1);
+    padding: calc(var(--space-sm) + env(safe-area-inset-top)) 0 calc(var(--space-lg) + var(--radius-curve));
+    background: var(--color-honey-bg);
+    color: var(--color-honey-ink);
+  }
+  .fv-tex {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    color: var(--color-honey-line);
+    opacity: var(--opacity-texture);
+    pointer-events: none;
+  }
+  .fv-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .fv-in { --fv-gutter: var(--space-md); max-width: var(--size-content); padding-inline: var(--fv-gutter); }
+  .fv-wide .fv-in { max-width: none; }
+
+  .fv-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); min-height: var(--size-touch); }
+  .fv-acts { display: flex; align-items: center; gap: var(--space-xs); margin-left: auto; }
+  .fv :where(h1, h2, h3) { color: inherit; }
+  .fv-t {
+    flex: 1;
+    min-width: 0;
+    font: var(--weight-medium) var(--text-md) / var(--leading-snug) var(--font-display);
+    letter-spacing: var(--tracking-tight);
+  }
+  .fv-detalhe .fv-t { text-align: center; }
+  .fv-greet {
+    margin-top: var(--space-2xs);
+    font: var(--weight-light) var(--text-xl) / var(--leading-tight) var(--font-display);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  .fv-s { margin-top: var(--space-2xs); color: var(--color-honey-ink-2); font-variant-numeric: tabular-nums; text-wrap: pretty; }
+  .fv-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-right: auto;
+    font: var(--weight-medium) var(--text-base) / 1 var(--font-display);
+    letter-spacing: var(--tracking-tight);
+  }
+  .fv-mark svg.favos { width: 22px; height: 22px; color: var(--color-honey-mark); }
+
+  /* Controles do kit sobre o bloco: mesmas peças, cores do mel. */
+  .fv :focus-visible { outline-color: var(--color-honey-ink); }
+  .fv .ibtn { color: var(--color-honey-ink); }
+  .fv .ibtn.bd { background: var(--color-honey-raised); border-color: var(--color-honey-rule); }
+  .fv .sw { background: var(--color-honey-control); }
+  .fv .sw[aria-checked="true"] { background: var(--color-honey-switch); }
+  .fv .btn-link { color: var(--color-honey-ink); }
+  /* Botão principal no bloco = superfície clara (latão sobre mel some). */
+  .fv .btn:not(.btn-ghost) { background: var(--color-surface); border-color: transparent; color: var(--color-text); }
+  .fv .btn-ghost { color: var(--color-honey-ink); }
+  @media (hover: hover) {
+    .fv .ibtn:hover { background: var(--color-honey-raised); }
+    .fv .btn-ghost:hover { background: var(--color-honey-raised); }
+  }
+
+  /* Busca clara sobre o bloco. */
+  .fv-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    height: calc(var(--size-control) + var(--space-2xs));
+    margin-top: var(--space-sm);
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    cursor: text;
+  }
+  .fv-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    font: var(--weight-regular) var(--text-base) / 1 var(--font-body);
+    outline: none;
+  }
+  .fv-search input::placeholder { color: var(--color-muted); }
+  .fv-search input::-webkit-search-cancel-button { cursor: pointer; }
+  .fv-search:focus-within { outline: 2px solid var(--color-honey-ink); outline-offset: 2px; }
+
+  /* Painel de conteúdo e curva em S ------------------------------------------------------------------------ */
+  .fv-page { min-height: 100%; }
+  .fv-pg {
+    position: relative;
+    padding: var(--radius-curve) 0 var(--space-lg);
+    background: var(--color-bg);
+    border-top-right-radius: var(--radius-curve);
+  }
+  /* Canto côncavo à esquerda: o mel termina arredondado. */
+  .fv-pg::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(var(--radius-curve) * -1);
+    width: var(--radius-curve);
+    height: var(--radius-curve);
+    background: var(--color-bg);
+    -webkit-mask: radial-gradient(circle at 100% 0, transparent calc(var(--radius-curve) - 0.5px), var(--color-bg) var(--radius-curve));
+    mask: radial-gradient(circle at 100% 0, transparent calc(var(--radius-curve) - 0.5px), var(--color-bg) var(--radius-curve));
+  }
+  .fv-pg-in { display: flex; flex-direction: column; gap: var(--space-sm); }
+  /* Bloco mais alto + 1º filho subindo por cima dele (card do tempo na Início). */
+  .fv.fv-lifted { padding-bottom: calc(var(--space-3xl) + var(--space-xs) + var(--radius-curve)); }
+  .fv-lift { position: relative; z-index: var(--z-base); margin-top: calc(var(--space-3xl) * -1); box-shadow: var(--shadow-card-hover); }
+
+  @media (min-width: 1024px) {
+    .fv { padding-top: var(--space-xl); }
+    .fv-in { --fv-gutter: var(--space-xl); }
+    .fv-t { font-size: var(--text-xl); letter-spacing: var(--tracking-display); }
+    .fv-greet { font-size: var(--text-2xl); }
+    .fv-mark { display: none; }
+    .fv-pg { padding-bottom: var(--space-2xl); }
+    .fv-pg-in { gap: var(--space-md); }
+  }
+
+  /* Entrada de página: fade + 6px. `backwards` (não `both`): terminado, não sobra transform no elemento. */
+  .fv-enter { animation: fv-enter var(--dur-short) var(--ease-out) backwards; }
+  .fv-enter-2 { animation-delay: 40ms; }
+  @keyframes fv-enter { from { opacity: 0; transform: translateY(calc(var(--space-2xs) * 1.5)); } }
+
+  /* Favo (tile de ícone) ------------------------------------------------------------------------------------ */
+  .hx {
+    --hx: 44px;
+    --hx-bg: var(--color-surface-2);
+    --hx-ink: var(--color-text-2);
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--hx);
+    height: var(--hx);
+    color: var(--hx-ink);
+    transition: color var(--dur-short) var(--ease-out);
+  }
+  .hx > .hx-s {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: var(--hx-bg);
+    stroke: var(--hx-bg);
+    stroke-width: 8;
+    stroke-linejoin: round;
+    transition: fill var(--dur-short) var(--ease-out), stroke var(--dur-short) var(--ease-out);
+  }
+  .hx > :not(.hx-s) { position: relative; }
+  .hx.hx-on { --hx-bg: var(--color-accent); --hx-ink: var(--color-on-accent); }
+  .hx.hx-soft { --hx-bg: var(--color-accent-soft); --hx-ink: var(--color-accent-strong); }
+  .hx.hx-sm { --hx: 40px; }
+  .hx.hx-xl { --hx: 68px; }
+  .hx.hx-xl > .i { width: 30px; height: 30px; stroke-width: 1.4; }
+
+  /* Pílulas de filtro/abas ----------------------------------------------------------------------------------- */
+  .fv-pills {
+    --pill-ink: var(--color-honey-ink);
+    --pill-ink-2: var(--color-honey-ink-2);
+    --pill-rule: var(--color-honey-rule);
+    --pill-hover: var(--color-honey-raised);
+    --pill-on: var(--color-surface);
+    --pill-on-ink: var(--color-text);
+    --pill-on-ink-2: var(--color-muted);
+    --pill-focus: var(--color-honey-ink);
+    margin: var(--space-sm) calc(var(--fv-gutter, var(--space-md)) * -1) 0;
+    padding: var(--space-2xs) var(--fv-gutter, var(--space-md));
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .fv-pills::-webkit-scrollbar { display: none; }
+  .fv-pills-page {
+    --pill-ink: var(--color-text-2);
+    --pill-ink-2: var(--color-muted);
+    --pill-rule: var(--color-border-strong);
+    --pill-hover: var(--color-surface-2);
+    --pill-on: var(--color-accent-soft);
+    --pill-on-ink: var(--color-text);
+    --pill-on-ink-2: var(--color-accent-strong);
+    --pill-focus: var(--color-focus);
+  }
+  .fv-pills-t { position: relative; display: inline-flex; gap: var(--space-xs); vertical-align: top; }
+  .fv-pills-ind {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--pill-on);
+    box-shadow: var(--shadow-card);
+  }
+  .fv-pills-t[data-ready] .fv-pills-ind {
+    transition: transform var(--dur-short) var(--ease-in-out), width var(--dur-short) var(--ease-in-out);
+  }
+  .fv-pill {
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    flex: none;
+    height: 32px;
+    padding: 0 var(--space-sm);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--pill-rule);
+    color: var(--pill-ink);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-body);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out),
+      background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  /* Área de toque 44px sem crescer o desenho. */
+  .fv-pill::after { content: ""; position: absolute; inset: calc((var(--size-touch) - 32px) / -2) calc(var(--space-xs) / -2); }
+  .fv-pill small { font-weight: var(--weight-regular); color: var(--pill-ink-2); font-variant-numeric: tabular-nums; transition: color var(--dur-short) var(--ease-out); }
+  .fv-pill:active { transform: scale(0.97); }
+  .fv-pill:focus-visible { outline: 2px solid var(--pill-focus); outline-offset: 2px; }
+  .fv-pill[disabled] { opacity: var(--opacity-disabled); cursor: not-allowed; }
+  .fv-pill:is([aria-checked="true"], [aria-selected="true"]) { box-shadow: inset 0 0 0 1px transparent; color: var(--pill-on-ink); }
+  .fv-pill:is([aria-checked="true"], [aria-selected="true"]) small { color: var(--pill-on-ink-2); }
+  /* Antes da 1ª medida (sem indicador ainda) a escolhida tem o próprio fundo. */
+  .fv-pills-t:not([data-ready]) .fv-pill:is([aria-checked="true"], [aria-selected="true"]) { background: var(--pill-on); }
+  @media (hover: hover) {
+    .fv-pill:hover:not([aria-checked="true"], [aria-selected="true"], [disabled]) { background: var(--pill-hover); }
+  }
+
+  /* Abrir/recolher ------------------------------------------------------------------------------------------- */
+  .fv-col {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows var(--dur-short) var(--ease-in-out), opacity var(--dur-short) var(--ease-out);
+  }
+  .fv-col[data-open] { grid-template-rows: 1fr; opacity: 1; }
+  .fv-col-in { min-height: 0; overflow: hidden; overflow: clip; overflow-clip-margin: 4px; }
+  .fv-xb { color: var(--color-muted); }
+  .fv-xb > .i { transition: transform var(--dur-short) var(--ease-in-out); }
+  .fv-xb[aria-expanded="true"] > .i { transform: rotate(180deg); }
+  .fv-exp-h { display: flex; align-items: center; gap: var(--space-xs); }
+  .fv-exp-s { flex: 1; min-width: 0; }
+  .fv-exp-b { padding-top: var(--space-sm); }
+
+  /* Valor trocando (crossfade) ------------------------------------------------------------------------------- */
+  .fv-swap { display: inline-grid; vertical-align: baseline; }
+  .fv-swap-i { grid-area: 1 / 1; }
+  .fv-swap-i.is-in { animation: fv-swap-in var(--dur-short) var(--ease-out) backwards; }
+  .fv-swap-i.is-out { animation: fv-swap-out var(--dur-short) var(--ease-in) forwards; pointer-events: none; }
+  @keyframes fv-swap-in { from { opacity: 0; transform: translateY(var(--space-3xs)); } }
+  @keyframes fv-swap-out { to { opacity: 0; transform: translateY(calc(var(--space-3xs) * -1)); } }
+
+  /* Linha de aparelho ---------------------------------------------------------------------------------------- */
+  .fv-dev {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out),
+      box-shadow var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .fv-dev.on { background: var(--color-accent-soft); border-color: var(--color-accent-fill); }
+  .fv-dev-r { display: flex; align-items: center; gap: var(--space-sm); min-height: var(--density-list-row); padding: var(--density-list-pad) var(--space-sm); }
+  .fv-dev.has-x .fv-dev-r { gap: var(--space-xs); }
+  .fv-dev.has-x .fv-dev-r > .hx { margin-right: var(--space-2xs); }
+  .fv-dev-tx {
+    flex: 1;
+    min-width: 0;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-3xs);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    border-radius: var(--radius-control);
+  }
+  :is(a, button).fv-dev-tx { cursor: pointer; }
+  .fv-dev-tx b { font: var(--weight-medium) var(--text-sm) / var(--leading-snug) var(--font-body); }
+  .fv-dev-tx span {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fv-dev.on .fv-dev-tx span { color: var(--color-text-2); }
+  .fv-dev.is-off { background: var(--color-surface-2); box-shadow: none; }
+  .fv-dev.is-off .hx { --hx-bg: var(--color-surface-3); opacity: var(--opacity-offline); }
+  .fv-dev.is-off .fv-dev-tx span { color: var(--color-warning); font-weight: var(--weight-medium); }
+  .fv-dev:has(:is(a, button).fv-dev-tx:active) { transform: scale(0.99); }
+  .fv-dev-x {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin: 0 var(--space-sm);
+    padding: var(--space-sm) 0 var(--space-md);
+    border-top: 1px solid var(--color-border);
+  }
+  .fv-dev.on .fv-dev-x { border-top-color: var(--color-accent-fill); }
+  @media (hover: hover) {
+    .fv-dev:has(:is(a, button).fv-dev-tx:hover) { box-shadow: var(--shadow-card-hover); }
+  }
+
+  /* Navegação ------------------------------------------------------------------------------------------------ */
+  /* Menu lateral: marca Sete Favos e realce latão soft que desliza (40px por item + gap 2px do kit). */
+  .side .brand .favos { width: 22px; height: 22px; color: var(--color-accent-deep); }
+  .fv-nav { position: relative; }
+  .fv-nav > a { position: relative; z-index: 1; }
+  .fv-nav > a[aria-current="page"] { background: transparent; }
+  .fv-nav-ind {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    border-radius: var(--radius-control);
+    background: var(--color-accent-soft);
+    transform: translateY(calc(var(--i, 0) * (40px + var(--space-3xs))));
+    transition: transform var(--dur-short) var(--ease-in-out), opacity var(--dur-short) var(--ease-out);
+  }
+  .fv-nav-ind[data-hidden] { opacity: 0; }
+
+  /* Barra de baixo (celular) em pílulas: só a ativa mostra rótulo. */
+  .fv-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-sticky);
+    display: flex;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md) max(var(--space-xs), env(safe-area-inset-bottom));
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+  }
+  @media (min-width: 1024px) { .fv-tabs { display: none; } }
+  .fv-tabs a {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(var(--size-control) + var(--space-2xs));
+    border-radius: var(--radius-card);
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: flex-grow var(--dur-short) var(--ease-in-out), background-color var(--dur-short) var(--ease-out),
+      color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .fv-tabs a:active { transform: scale(0.97); }
+  .fv-tabs a[aria-current="page"] { flex-grow: 2.4; background: var(--color-accent-soft); color: var(--color-accent-strong); }
+  .fv-tabs-l {
+    display: grid;
+    grid-template-columns: 0fr;
+    min-width: 0;
+    opacity: 0;
+    transition: grid-template-columns var(--dur-short) var(--ease-in-out), opacity var(--dur-short) var(--ease-out);
+  }
+  .fv-tabs-l > span {
+    min-width: 0;
+    overflow: hidden;
+    padding-left: var(--space-xs);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font: var(--weight-medium) var(--text-sm) / 1 var(--font-body);
+  }
+  .fv-tabs a[aria-current="page"] .fv-tabs-l { grid-template-columns: 1fr; opacity: 1; }
+  @media (hover: hover) {
+    .fv-tabs a:hover:not([aria-current="page"]) { color: var(--color-text-2); }
+  }
+
+  /* Menos movimento: espacial vira crossfade ≤150ms (DS · Movimento). */
+  @media (prefers-reduced-motion: reduce) {
+    .fv-enter { animation-name: fv-fade; animation-duration: 150ms; }
+    .fv-swap-i.is-in { animation-name: fv-fade; animation-duration: 150ms; }
+    .fv-swap-i.is-out { animation-name: fv-fade-out; animation-duration: 150ms; }
+    .fv-col { transition: opacity 150ms linear; }
+    .fv-xb > .i, .fv-nav-ind, .fv-pills-t[data-ready] .fv-pills-ind { transition: none; }
+    .fv-tabs a, .fv-tabs-l { transition: background-color 150ms linear, color 150ms linear, opacity 150ms linear; }
+    .fv-pill:active, .fv-tabs a:active, .fv-dev:has(:is(a, button).fv-dev-tx:active) { transform: none; }
+  }
+  @keyframes fv-fade { from { opacity: 0; } }
+  @keyframes fv-fade-out { to { opacity: 0; } }
+}

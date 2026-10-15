@@ -1,0 +1,14 @@
+/* Só a vitrine de dev (/_favos). Não é API: as telas não usam estas classes. */
+@layer components {
+  .fvp-h { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); font-size: var(--text-base); }
+  .fvp-row { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+  .fvp-card { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+  .fvp-card > div { flex: 1; min-width: 0; }
+  .fvp-exp { display: block; }
+  .fvp-wx { font-size: var(--text-2xl); }
+  .fvp-lead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
+  .fvp-hero { flex-basis: 100%; margin-top: var(--space-md); color: var(--color-honey-ink); }
+  .fvp-hero small { color: var(--color-honey-ink-2); }
+  .fvp-step { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+  .fvp-vol { font-size: var(--text-2xl); }
+}

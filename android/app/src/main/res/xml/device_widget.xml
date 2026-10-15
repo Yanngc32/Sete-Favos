@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Até 4 itens. Baixo = uma linha (widget_row); com altura para duas linhas e 3+ itens = grade 2x2 (widget_grid). -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.yanngc32.central.WidgetConfigActivity"
+    android:initialLayout="@layout/widget_row"
+    android:minWidth="57dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

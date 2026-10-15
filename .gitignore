@@ -1,0 +1,32 @@
+# Dependências e builds (refazem com `uv sync` e `npm ci && npm run build`)
+backend/.venv/
+backend/.ruff_cache/
+backend/.pytest_cache/
+__pycache__/
+*.pyc
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+# Build do central.exe e do instalador (packaging/)
+build/
+
+# Dados locais da demo e do diagnóstico (aparelhos, banco, IPs da sua rede)
+backend/.demo/
+backend/.demo.env
+diagnostico.json
+*.db
+*.db-shm
+*.db-wal
+
+# Segredos e configuração de máquina (as credenciais ficam no cofre do Windows, nunca em arquivo)
+.env
+.env.*
+casa.env
+*.pem
+*.key
+
+# Ferramentas
+nexos.json
+.claude/
+.DS_Store
+Thumbs.db
